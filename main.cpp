@@ -1,6 +1,6 @@
 /*This is a rb program
  *Trevor Horine
- *3/15/18
+ *05/08/18
  */
 #include <iostream>
 #include <cstring>
@@ -9,7 +9,7 @@
 #include <stdlib.h>
 
 using namespace std;
-
+// node struct
 struct node{
   node* left = NULL;
   node* right = NULL;
@@ -17,6 +17,7 @@ struct node{
   int color = -1; // 0 is red 1 is black
   int value = 0;
 };
+//functions to return things inrelation to node that is passed in
 node* parent(struct node* n){
   return n -> par;
 }
@@ -46,41 +47,20 @@ node* uncle(struct node* n){
   }
   return sib(p);
 }
-void rotate_left(struct node* &root, struct node* n){
-  struct node* nnew = n -> right;
-  if(nnew != NULL){
+//rotate functions
+void rotate_left(node* &root, node* n) {
+  node* nnew = n -> right;
+  if(nnew != NULL) {
     n -> right = nnew -> left;
     nnew -> left = n;
     nnew -> par = n -> par;
     n -> par = nnew;
-    if(nnew -> par != NULL && nnew -> par -> left == n){
-      nnew -> par -> left = n;
+    if(nnew -> par != NULL && nnew -> par -> left == n) {
+      nnew -> par -> left = nnew;
     }
-    else if(nnew -> par != NULL && nnew -> par -> left == n){
+    else if(nnew -> par != NULL && nnew -> par -> right == n) {
       nnew -> par -> right = nnew;
     }
-    if(n == root){
-      root = nnew;
-      root -> color = 1;
-    }
-  }
-}
-void rotate_right(struct node* &root, struct node* n){
-  struct node* nnew = n -> left;
-  if(nnew != NULL){
-    if(n -> par != NULL && n == n -> par -> left){
-      n -> par -> left = n -> left;
-    }
-    else if(n -> par != NULL && n == n -> par -> right){
-      n -> par -> right = n -> left;
-    }
-    n->left = nnew->right;
-    if(nnew->right != NULL) {
-      nnew->right->par = n;
-    }
-    nnew->right = n;
-    nnew->par = n->par;
-    n->par = nnew;
     if(n == root) {
       root = nnew;
       root -> color = 1;
@@ -88,15 +68,38 @@ void rotate_right(struct node* &root, struct node* n){
   }
 }
 
+void rotate_right(node* &root, node* n) {
+  node* nnew = n -> left;
+  if(nnew != NULL) {
+    if(n -> par != NULL && n == n -> par -> left) {
+      n -> par -> left = n -> left;
+    }
+    else if(n -> par != NULL && n == n -> par -> right) {
+      n -> par -> right = n -> left;
+    }
+    n -> left = nnew -> right;
+    if(nnew -> right != NULL) {
+      nnew -> right -> par = n;
+    }
+    nnew -> right = n;
+    nnew -> par = n -> par;
+    n -> par = nnew;
+    if(n == root) {
+      root = nnew;
+      root -> color = 1;
+    }
+  }
+}
+//prototypes for the oter functions
 void print(struct node*, int);
-struct node* insert(struct node*,struct node*);
-void insert_rec(struct node*, struct node* );
-void insert_repair_tree(struct node*, struct node*);
-void insert_case1(struct node*, struct node*);
-void insert_case2(struct node*, struct node*);
-void insert_case3(struct node*, struct node*);
-void insert_case4(struct node*, struct node*);
-void insert_case4part2(struct node*, struct node*);
+struct node* insert(struct node*&,struct node*);
+void insert_rec(struct node*&, struct node* );
+void insert_repair_tree(struct node*&, struct node*);
+void insert_case1(struct node*&, struct node*);
+void insert_case2(struct node*&, struct node*);
+void insert_case3(struct node*&, struct node*);
+void insert_case4(struct node*&, struct node*);
+void insert_case4part2(struct node*&, struct node*);
 
 //main mentod
 int main(){
@@ -107,6 +110,7 @@ int main(){
   bool w = true;
   int f[400];
   while(w == true){
+    //what do you want to do
     cout << "do you want to add, or quit?" << endl;
     for (int i = 0; i < 10; i++){
       in[i] = NULL;
@@ -115,6 +119,7 @@ int main(){
     for (int i = 0; i < 10; i++){
       in[i] = toupper(in[i]);
     }
+    //to add this happens
     if(strcmp(in, "ADD") == 0){
       cout << "enter a number between 1 and 1000 to add to the tree or a file name including the .txt" << endl;
       input = NULL;
@@ -122,12 +127,14 @@ int main(){
  	in[i] = NULL;
       }
       cin >> in;
+      //if is file
       if (isalpha(in[0])){
  	ifstream file;
  	file.open(in);
  	file.getline(in, 400);
  	file.close();
  	for(int i = 0; i < 400; i++){
+	  //if not number replace , with space
  	  if (!isdigit(in[i])){
  	    if (in[i] == ','){
  	      in[i] = ' ';
@@ -143,6 +150,7 @@ int main(){
  	cout << endl;
       }
       int i = 0;
+      //separate by space
       char *s = strtok(in, " ");
       while (s != NULL) {
  	if (i < 400) {
@@ -156,9 +164,11 @@ int main(){
  	}
 	s = strtok(NULL, " ");
       }
-      //cout << root << endl;
+      //print
+      //cout << root -> value << endl;
       print(root, 0);
     }
+    //to quit this happens
     else if(strcmp(in, "QUIT") == 0){
       w = false;
     }
@@ -166,25 +176,13 @@ int main(){
 }
 
 //method to add nodes to tree
-struct node* insert(struct node* root, struct node* n){
-  //if (root == NULL){
-  // root = n;
-  //root -> color = 1;
-  //}
-  // else{
+struct node* insert(struct node* &root, struct node* n){
   insert_rec(root, n);
   insert_repair_tree(root, n);
-  //root = n;
-  //while(parent(root) != NULL){
-  //root = parent(root);
-  // }
-  // }
-  //cout << "test3" << endl;
-  //cout << root << endl;
-  // return root;
+  return root;
 }
-
-void insert_rec(struct node* root, struct node* n){
+//another part of adding
+void insert_rec(struct node* &root, struct node* n){
   if (root == NULL){
     root = n;
     root -> color = 1;
@@ -216,8 +214,8 @@ void insert_rec(struct node* root, struct node* n){
     }
   }
 }
-
-void insert_repair_tree(struct node* root, struct node* n){
+//to fix tree do the following
+void insert_repair_tree(struct node* &root, struct node* n){
   if (parent(n) == NULL) {
     insert_case1(root, n);
   } else if (parent(n) -> color == 1) {
@@ -228,18 +226,18 @@ void insert_repair_tree(struct node* root, struct node* n){
     insert_case4(root, n);
   }
 }
-
-void insert_case1(struct node* root, struct node* n){
+//if case one do following
+void insert_case1(struct node* &root, struct node* n){
   if (parent(n) == NULL){
     n -> color = 1;
   }
 }
-
-void insert_case2(struct node* root, struct node* n){
+//if case two it is in right spot
+void insert_case2(struct node* &root, struct node* n){
   return;
 }
-
-void insert_case3(struct node* root, struct node* n){
+//if case three do following
+void insert_case3(struct node* &root, struct node* n){
   parent(n) -> color = 1;
   uncle(n) -> color = 1;
   if(grandparent(n) != root){
@@ -247,26 +245,76 @@ void insert_case3(struct node* root, struct node* n){
   }
   insert_repair_tree(root, grandparent(n));
 }
-
-void insert_case4(struct node* root, struct node* n){
-  struct node* p = parent(n);
-  struct node* g = grandparent(n);
-  if (g -> left != NULL && g -> left -> right != NULL && n == g -> left -> right) {
+//if case four do the following
+void insert_case4(node* &root, node* n) {
+  node* p = parent(n);
+  node* g = grandparent(n);
+  
+  if(g -> left != NULL && g - >left -> right != NULL && n == g -> left -> right) {
     rotate_left(root, p);
-    n = n -> left;
   }
-  else if (g -> right != NULL && g -> right -> left != NULL && n == g -> right -> left) {
+  else if(g -> right != NULL && g -> right -> left != NULL && n == g -> right -> left) {
     rotate_right(root, p);
-    n = n -> right; 
+    n = n -> right;
+    insert_case4part2(root, n);
+    return;
   }
-  if (n == p -> left) {
+  else if(g -> right != NULL && g -> right -> right !=NULL && n == g -> right -> right) {
+    if(g == root) {
+      if(p-> left != NULL) {
+	g -> right = p -> left;
+	p -> left -> par = g;
+	g -> par = p;
+      }
+      else {
+	g -> par = p;
+      }
+      g -> right = p -> left;
+      p -> left = g;
+      root = p;
+      p -> right = n;
+      n -> par = p;
+      p -> color = 1;
+      g -> color = 0;
+    }
+    else if(g -> par != NULL && g -> par -> right != NULL && g == g -> par -> right) {
+      g -> par -> right = p;
+      p -> left = g;
+      p -> par = g -> par;
+      g -> par = p;
+      g -> right = NULL;
+      p -> color = 1;
+      g -> color = 0;
+    }
+    else if(g -> par != NULL) {
+      g -> par -> left = p;
+      p -> left = g;
+      p -> par = g -> par;
+      g -> par = p;
+      g -> right = NULL;
+      p -> color = 1;
+      g -> color = 0;
+    }
+    return;
+  }
+  else if(g -> left != NULL && g -> left -> left != NULL && n == g -> left -> left && n -> color == 0 && n -> par -> color == 0) {
+    insert_case4part2(root, n);
+    return;
+  }
+  insert_case4part2(root, n->left);
+}
+// part two of case four
+void insert_case4part2(node* &root, node* n) {
+  node* p = parent(n);
+  node* g = grandparent(n);
+  
+  if(n -> par -> left != NULL && n == p -> left) {
     rotate_right(root, g);
   }
-  else if(n == p-> right){
+  else {
     rotate_left(root, g);
   }
   p -> color = 1;
-  n -> color = 0;
   g -> color = 0;
 }
 
@@ -275,7 +323,7 @@ void print(struct node* current, int d){
   //cout << "TREE" << endl;
   //cout << current << endl;
   if(current -> left != NULL){
-    print(current-> left, d+1);
+    print(current -> left, d+1);
   }
   int t = d;
   for(t; t>0; t--){
